@@ -5,9 +5,11 @@ import { BASE_URL } from "../baseUrl";
 const RequestResetPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const response = await axios.post(`${BASE_URL}/auth/request-reset`, {
         email,
@@ -15,6 +17,8 @@ const RequestResetPassword = () => {
       setMessage(response.data.message);
     } catch (error) {
       setMessage(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -35,7 +39,7 @@ const RequestResetPassword = () => {
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded"
           >
-            Send Reset Link
+            {isSubmitting ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
         {message && <p className="mt-4 text-center text-gray-600">{message}</p>}
