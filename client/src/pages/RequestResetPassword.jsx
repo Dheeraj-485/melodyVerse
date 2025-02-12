@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
+import { BASE_URL } from "../baseUrl";
 
 const RequestResetPassword = () => {
   const [email, setEmail] = useState("");
@@ -8,10 +9,9 @@ const RequestResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:8080/auth/request-reset",
-        { email }
-      );
+      const response = await axios.post(`${BASE_URL}/auth/request-reset`, {
+        email,
+      });
       setMessage(response.data.message);
     } catch (error) {
       setMessage(error.response?.data?.message || "Something went wrong");

@@ -13,7 +13,7 @@ const Dashboard = () => {
         const token = localStorage.getItem("token");
         if (!token) return navigate("/login");
 
-        const res = await axios.get("http://localhost:8080/auth/own", {
+        const res = await axios.get(`${BASE_URL}/auth/own`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(res);

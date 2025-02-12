@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { BASE_URL } from "../baseUrl";
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -12,7 +13,7 @@ const ResetPassword = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        `http://localhost:8080/auth/reset-password/${token}`,
+        `${BASE_URL}/auth/reset-password/${token}`,
         { password }
       );
       if (response.status === 200) {

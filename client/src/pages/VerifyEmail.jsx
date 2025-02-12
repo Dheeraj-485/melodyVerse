@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { BASE_URL } from "../baseUrl";
 
 const VerifyEmail = () => {
   const { token } = useParams();
@@ -15,7 +16,7 @@ const VerifyEmail = () => {
     const verify = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/auth/verify-email/${token}`
+          `${BASE_URL}/auth/verify-email/${token}`
         );
         if (response.status === 200) {
           setMessage(response.data.message);

@@ -145,10 +145,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8080/auth/login",
-        data
-      );
+      const response = await axios.post(`${BASE_URL}/auth/login`, data);
       console.log(response);
 
       if (rememberMe) {
