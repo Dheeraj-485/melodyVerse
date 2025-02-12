@@ -9,8 +9,13 @@ const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setIsSubmitting(true);
+
     try {
       const response = await axios.post(
         `${BASE_URL}/auth/reset-password/${token}`,
@@ -22,6 +27,8 @@ const ResetPassword = () => {
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
       setMessage(error.response.data.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -42,7 +49,7 @@ const ResetPassword = () => {
             type="submit"
             className="w-full bg-blue-500 text-white py-2 rounded"
           >
-            Reset Password
+            {isSubmitting ? "Changing..." : "Reset Password"}
           </button>
         </form>
         {message && <p className="mt-4 text-center text-gray-600">{message}</p>}
