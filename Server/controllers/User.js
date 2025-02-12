@@ -4,13 +4,15 @@ const jwt = require("jsonwebtoken");
 const User = require("../model/User");
 const crypto = require("crypto");
 require("dotenv").config();
-
 const nodemailer = require("nodemailer");
+
+// Configure Nodemailer for email verification & password reset
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
 });
 
+// Function to generate JWT token for authentication
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, username: user.username },
@@ -18,27 +20,39 @@ const generateToken = (user) => {
     { expiresIn: "24h" }
   );
 };
+
+/**
+ * @route   POST /signup
+ * @desc    Register a new user and send email verification
+ * @access  Public
+ */
 exports.signupUser = async (req, res) => {
   try {
     const { fullName, username, email, password, profilePicture } = req.body;
+
+    // Validate required fields
     if (!username || !password || !email || !fullName) {
       return res.status(400).json({ message: "All fields are required" });
     }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User already exists,please try with another email" });
+      return res.status(400).json({
+        message: "User already exists, please try with another email",
+      });
     }
 
+    // Hash password before saving
     const hash = await bcrypt.hash(password, 10);
 
-    // const verificationToken = crypto.randomBytes(20).toString("hex");
+    // Generate verification token (valid for 15 minutes)
     const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, {
-      expiresIn: Date.now() + 15 * 60 * 1000,
+      expiresIn: "15m",
     });
 
-    const newuser = new User({
+    // Create new user in database
+    const newUser = new User({
       fullName,
       username,
       email,
@@ -47,11 +61,10 @@ exports.signupUser = async (req, res) => {
       verificationToken,
     });
 
-    await newuser.save();
+    await newUser.save();
 
-    //Send verification mail
+    // Send email verification link
     const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
-
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
@@ -60,7 +73,7 @@ exports.signupUser = async (req, res) => {
     });
 
     return res.status(201).json({
-      message: "Signup successfull! check your email to verify your account",
+      message: "Signup successful! Check your email to verify your account.",
     });
   } catch (error) {
     console.error("Error creating user", error.message);
@@ -70,85 +83,107 @@ exports.signupUser = async (req, res) => {
   }
 };
 
-//verify email
+/**
+ * @route   GET /verify-email/:token
+ * @desc    Verify user email using token
+ * @access  Public
+ */
 exports.verifyMail = async (req, res) => {
   try {
-    // const user = await User.findOne({ verificationToken: req.params.token });
     const { token } = req.params;
 
+    // Decode the JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Find the user by email
     const user = await User.findOne({ email: decoded.email });
     if (!user) {
-      return res.status(500).json({ message: "Invalid or expired token" });
+      return res.status(400).json({ message: "Invalid or expired token" });
     }
+
+    // Mark user as verified
     user.isVerified = true;
     user.verificationToken = undefined;
     await user.save();
 
     return res
       .status(200)
-      .json({ message: "Email verified successfully! you can now login" });
+      .json({ message: "Email verified successfully! You can now log in." });
   } catch (error) {
     res.status(500).json({
-      message: "Server error-- error in Verify email",
+      message: "Server error - Verify email",
       error: error.message,
     });
   }
 };
 
-// Generate JWT Token
-
-//Login with Email verification check
-
+/**
+ * @route   POST /login
+ * @desc    Login user after email verification
+ * @access  Public
+ */
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    if (!user.isVerified)
+
+    // Check if the user is verified
+    if (!user.isVerified) {
       return res
         .status(401)
         .json({ message: "Please verify your email first" });
+    }
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid credentials password" });
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    res.json({ message: "Login successfull", token: generateToken(user) });
+    res.json({ message: "Login successful", token: generateToken(user) });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Server error -- Login", error: error.message });
+      .json({ message: "Server error - Login", error: error.message });
   }
 };
 
-//Request password request
+/**
+ * @route   POST /request-reset
+ * @desc    Send password reset link to user email
+ * @access  Public
+ */
 exports.requestPassReset = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
+
+    // Check if user exists
     if (!user) {
       return res.status(400).json({ message: "No user found with this email" });
     }
 
+    // Generate password reset token (valid for 1 hour)
     const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; //1 hour
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
 
     await user.save();
 
+    // Send reset password email
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-
     await transporter.sendMail({
-      form: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER,
       to: user.email,
       subject: "Password Reset Request - MelodyVerse",
-      text: `Click this link to reset your password:
-      ${resetUrl}`,
+      text: `Click this link to reset your password: ${resetUrl}`,
     });
 
     res.json({ message: "Password reset email sent!" });
@@ -157,35 +192,51 @@ exports.requestPassReset = async (req, res) => {
   }
 };
 
+/**
+ * @route   POST /reset-password/:token
+ * @desc    Reset user password using token
+ * @access  Public
+ */
 exports.resetPassword = async (req, res) => {
   try {
+    // Find user by reset token and check if it is still valid
     const user = await User.findOne({
       resetPasswordToken: req.params.token,
       resetPasswordExpires: { $gt: Date.now() },
     });
-    if (!user)
-      return res.status(400).json({ message: "Invalid or expired token" });
 
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    // Hash new password and update user
     user.password = await bcrypt.hash(req.body.password, 10);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
 
-    res.json({ message: "Password reset successfull! You can now login" });
+    res.json({ message: "Password reset successful! You can now log in." });
   } catch (error) {
-    res.status(500).json({
-      message: "Server error -- reset password",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({ message: "Server error - Reset password", error: error.message });
   }
 };
 
+/**
+ * @route   GET /own
+ * @desc    Get user details (only for authenticated users)
+ * @access  Private
+ */
 exports.checkUser = async (req, res) => {
   try {
+    // Find user and exclude password field
     const user = await User.findById(req.user.id).select("-password");
+
     if (!user) {
-      res.status(200).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
+
     res.json(user);
   } catch (error) {
     console.error("Error checking user", error.message);

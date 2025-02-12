@@ -46,7 +46,9 @@ const Login = () => {
         toast.error("Invalid cred");
       }
     } catch (error) {
-      toast.error("Invalid credentials. Please try again.");
+      toast.error(error.response.data.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
