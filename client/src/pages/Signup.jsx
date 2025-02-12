@@ -30,12 +30,7 @@ const Signup = () => {
       // Save user data (Replace this with an actual API call)
       const res = await axios.post(`${BASE_URL}/auth/signup`, data);
 
-      toast.success(
-        // setSuccessMessage(
-        //   "Signup successful! Welcome email sent. Redirecting..."
-        // )
-        res.data.message
-      );
+      toast.success(res.data.message);
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
       toast.error(error.response.data.message);

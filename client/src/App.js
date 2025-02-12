@@ -6,7 +6,6 @@ import Signup from "./pages/Signup";
 import RequestResetPassword from "./pages/RequestResetPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
-import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 
 const App = () => {
