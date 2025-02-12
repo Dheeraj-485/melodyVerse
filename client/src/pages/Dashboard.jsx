@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+import { BASE_URL } from "../baseUrl";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
