@@ -26,8 +26,8 @@ router
   )
   .get("/verify-email/:token", verifyMail)
 
-  .post("/login", loginLimiter, loginUser)
-  .post("/request-reset", loginLimiter, requestPassReset)
+  .post("/login", loginUser)
+  .post("/request-reset", requestPassReset)
   .post("/reset-password/:token", resetPassword)
   .get("/own", isAuth, checkUser);
 module.exports = router;
