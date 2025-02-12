@@ -16,6 +16,7 @@ const Login = () => {
   } = useForm();
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("email");
@@ -26,6 +27,7 @@ const Login = () => {
   }, [setValue]);
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     try {
       const response = await axios.post(`${BASE_URL}/auth/login`, data);
       console.log(response);
@@ -140,7 +142,7 @@ const Login = () => {
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              Login
+              {isSubmitting ? "Wait..." : "Login"}
             </motion.button>
           </form>
 
