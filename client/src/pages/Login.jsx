@@ -17,6 +17,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("email");
@@ -95,18 +96,27 @@ const Login = () => {
             </motion.div>
 
             {/* Password Field */}
+
             <motion.div
               initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
+              className="relative"
             >
               <label className="block text-gray-300">Password</label>
               <input
-                type="password"
+                type={passwordVisible ? "password" : "text"}
                 {...register("password", { required: "Password is required" })}
                 className="w-full px-4 py-2 mt-1 text-gray-900 bg-white rounded-lg focus:outline-none"
                 placeholder="Enter your password"
               />
+              <button
+                type="button"
+                className="absolute right-3 top-9 text-gray-500"
+                onClick={() => setPasswordVisible(!passwordVisible)}
+              >
+                {passwordVisible ? "🙈" : "👁️"}
+              </button>
               {errors.password && (
                 <p className="text-red-500">{errors.password.message}</p>
               )}

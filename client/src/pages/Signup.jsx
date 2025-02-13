@@ -107,7 +107,7 @@ const Signup = () => {
             <div className="relative">
               <label className="block text-gray-300">Password</label>
               <input
-                type={passwordVisible ? "text" : "password"}
+                type={passwordVisible ? "password" : "text"}
                 {...register("password", {
                   required: "Password is required",
                   minLength: {
