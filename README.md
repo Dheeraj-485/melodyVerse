@@ -25,7 +25,7 @@ Ensure you have the following installed:
 
 1. **Clone the repository**  
    ```sh
-   git clone https://github.com/your-username/melodyverse-auth.git
+   git clone https://github.com/Dheeraj-485/melodyVerse.git
    cd melodyVerse
    cd Server
 
@@ -83,8 +83,7 @@ Ensure you have the following installed:
 ## ⚙️ Installation & Setup For FrontEnd
 
 1. **Clone the repository**  
-   ```sh
-   git clone https://github.com/Dheeraj-485
+   git clone https://github.com/Dheeraj-485/melodyVerse.git
    cd melodyVerse
    cd client
 
